@@ -27,7 +27,7 @@ registerRouter.post('/', async (req, res, next) => {
       }
 
       if(kind === 'Admin') {
-         newUser = new AdminUser({ ...rest, passwordHash })
+         newUser = new AdminUser({ ...rest, passwordHash });
       }
 
       const savedUser = await newUser.save();

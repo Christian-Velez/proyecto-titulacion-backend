@@ -22,12 +22,17 @@ const technologySchema = new Schema({
       type: [String],
       required: true,
    },
-   relatedTech: {
-      type: [String],
-      required: true,
-   },
+   relatedTechs: [
+      {
+         type: Schema.Types.ObjectId,
+         ref: 'Technology',
+      },
+   ],
 
-   timesRequested: Number,
+   timesRequested: {
+      type: Number,
+      default: 0,
+   },
 });
 
 technologySchema.set('toJSON', {
