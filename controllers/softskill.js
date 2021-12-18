@@ -27,18 +27,14 @@ softSkillRouter.post('/', userExtractor, async(req, resp, next) => {
          });
       }
       
-      
       const { body } = req;
       const newSoftSkill = new Softskill(body);
       const savedSoftskill = await newSoftSkill.save();
-
    
       resp.status(200).json(savedSoftskill);
-
-   }catch(err){
+   } catch(err){
       next(err);
    }
-
 });
 
 

@@ -5,16 +5,15 @@ const User = require('../models/User');
 const loginRouter = require('express').Router();
 const handleErrors = require('../middlewares/handleErrors');
 
+
+
+// Hacer el inicio de sesión
 loginRouter.post('/', async (req, resp, next) => {
    try {
       const { body } = req;
-
-      console.log(body);
       const { username, password } = body;
 
-      const user = await User.findOne({
-         username,
-      });
+      const user = await User.findOne({username});
 
       const passwordCorrect =
          user === null
@@ -34,30 +33,33 @@ loginRouter.post('/', async (req, resp, next) => {
       const { id, username: uUsername, kind, ...rest } = user.toJSON();
 
      
-
-      // Datos importantes enviados en el token que se usaran despues para hacer peticiones
+      // Datos importantes enviados en el token que se usaran despues para comprobar permisos
       const userForToken = {
          id,
          uUsername,
          kind: kind,
       };
-
       const token = jwt.sign(
          userForToken,
          process.env.JWT_SECRET
       );
 
+      // Data que mando para guardarla en el front
       resp.status(201).json({
          message: 'Login successful',
+         id,
          kind,
          token,
          rest
       });
+      
    } catch (err) {
       next(err);
    }
 });
 
+
+// Verificar el token que el usuario tiene en local storage
 loginRouter.post(
    '/verify',
    async (req, resp, next) => {

@@ -10,6 +10,9 @@ const loginRouter = require('./controllers/login');
 const registerRouter = require('./controllers/register');
 const technologyRouter = require('./controllers/technology');
 const softSkillRouter = require('./controllers/softskill');
+const developerRouter = require('./controllers/developer');
+
+
 
 const app = express();
 app.use(express.json());
@@ -34,8 +37,15 @@ app.get('/', (req, resp) => {
 
 app.use('/api/login', loginRouter);
 app.use('/api/register', registerRouter);
+
+// Admin
 app.use('/api/technology', technologyRouter);
 app.use('/api/softskill', softSkillRouter);
+
+
+//Developer
+app.use('/api/developer', developerRouter);
+
 
 
 
