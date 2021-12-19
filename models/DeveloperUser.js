@@ -15,9 +15,6 @@ const DeveloperUser = User.discriminator(
          description: String,
          img: String,
          curriculum: String,
-         qualifications: [{
-            
-         }],
          technologies: [{
             technology: {
                type: Schema.Types.ObjectId,
@@ -30,18 +27,56 @@ const DeveloperUser = User.discriminator(
             ref: 'Softskill', 
          }],
          projects: [{
-            img: String,
-            title: String,
+            img: {
+               type: String,
+               required: true
+            }, 
+            title: {
+               type: String,
+               required: true
+            },
             linkDemo: String,
-            linkGH: String
+            linkGH: {
+               type: String,
+               required: true
+            }
          }],
          education: [{
-            title: String,
-            institution: String,
-
+            title: {
+               type: String,
+               required: true
+            },
+            institution: {
+               type: String,
+               required: true
+            },
+            year: {
+               type: String,
+               required: true
+            }
          }],
-         certifications: [],
+         certifications: [{
+            img: {
+               type: String,
+               required: true,
+            },
+            title: {
+               type: String,
+               required: true,
+            },
+            institution: {
+               type: String,
+               required: true
+            },
+            year: {
+               type: String,
+               required: true
+            }
+         }],
+
+
          applications: [],
+         qualifications: [{}]
       },
       options
    )

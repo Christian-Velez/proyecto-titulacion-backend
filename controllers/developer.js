@@ -13,7 +13,7 @@ developerRouter.get(
       try {
          const { id } = req.params;
 
-         const devUser = await DeveloperUser.findById(id).populate('technologies.technology');
+         const devUser = await DeveloperUser.findById(id).populate('technologies.technology').populate('softskills');
          
          resp.status(200).json({ 
             message: 'Todo fine',
