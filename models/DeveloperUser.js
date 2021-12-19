@@ -18,10 +18,28 @@ const DeveloperUser = User.discriminator(
          qualifications: [{
             
          }],
-         technologies: [],
-         softskills: [],
-         projects: [],
-         education: [],
+         technologies: [{
+            technology: {
+               type: Schema.Types.ObjectId,
+               ref: 'Technology', 
+            },
+            yearsOfExperience: Number
+         }],
+         softskills: [{
+            type: Schema.Types.ObjectId,
+            ref: 'Softskill', 
+         }],
+         projects: [{
+            img: String,
+            title: String,
+            linkDemo: String,
+            linkGH: String
+         }],
+         education: [{
+            title: String,
+            institution: String,
+
+         }],
          certifications: [],
          applications: [],
       },

@@ -13,7 +13,7 @@ developerRouter.get(
       try {
          const { id } = req.params;
 
-         const devUser = await DeveloperUser.findById(id);
+         const devUser = await DeveloperUser.findById(id).populate('technologies.technology');
          
          resp.status(200).json({ 
             message: 'Todo fine',
@@ -25,6 +25,24 @@ developerRouter.get(
       }
    }
 );
+
+// Actualizar el perfil de un desarrollador
+developerRouter.put('/:id', async (req, resp, next) => {
+   try {
+      const { id } = req.params;
+      const userInfo = req.body;
+      
+      const savedUser = await DeveloperUser.findByIdAndUpdate(id, userInfo , { new: true });
+      
+      resp.status(200).json({
+         message: 'ok',
+         newUser: savedUser
+      });
+   }
+   catch(err){
+      next(err);
+   }
+});
 
 developerRouter.use(handleErrors);
 
