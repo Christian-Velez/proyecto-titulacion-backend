@@ -22,10 +22,12 @@ const DeveloperUser = User.discriminator(
             },
             yearsOfExperience: Number
          }],
-         softskills: [{
-            type: Schema.Types.ObjectId,
-            ref: 'Softskill', 
-         }],
+         softskills: [
+            {
+               type: Schema.Types.ObjectId,
+               ref: 'Softskill', 
+            },
+         ],
          projects: [{
             img: {
                type: String,
