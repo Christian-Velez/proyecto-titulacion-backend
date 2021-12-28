@@ -17,7 +17,7 @@ developerRouter.get(
          const devUser = await DeveloperUser.findById(id).populate('technologies.technology').populate('softskills');
          
          resp.status(200).json({ 
-            message: 'Todo fine',
+            message: 'Usuario encontrado',
             devInfo: devUser 
          
          });

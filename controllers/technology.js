@@ -4,18 +4,36 @@ const handleErrors = require('../middlewares/handleErrors');
 const Technology = require('../models/Technology');
 const userExtractor = require('../middlewares/userExtractor');
 
-
+// Todas las tecnologias o por parametros
 technologyRouter.get('/', async (req, resp, next) => {
    try{
-      const technologies = await Technology.find({}).populate('relatedTechs');
+      let technologies;
+      //const query = req.query;
+      //if(query.name || query.type) {
+      //   technologies = await Technology.find({
+      //      name: {
+      //         $regex: query.name, 
+      //         $options: 'i'
+      //      },
+      //      type: {
+      //         $regex: query.type, 
+      //         $options: 'i'
+      //      }
+      //   });
+      //}
+      //else{
+      
+      technologies = await Technology.find({}).populate('relatedTechs');
+      //}
 
+   
       resp.status(200).json(technologies);
    } catch(err) {
       next(err);
    }
 });
 
-
+// Actualizar una tecnologia
 technologyRouter.post('/', userExtractor, async(req, resp, next) => {
    try{
       if(req.kind !== 'Admin') {

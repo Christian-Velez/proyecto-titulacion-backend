@@ -3,11 +3,12 @@ const ERROR_HANDLERS = {
       res.status(401).send({ name, message }),
 
    JsonWebTokenError: (res, {name, message}) => res.status(401).send( { name, message}),
+   CastError: (res, { name, message }) => res.status(401).send({ name, message }),
 
    defaultError: (res) => res.status(500).end(),
 };
 
-module.exports = (error, req, resp, _) => {
+module.exports = (error, req, resp,_) => {
    console.log(error.name);
    console.log(error.message);
    const handler =

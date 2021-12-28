@@ -3,9 +3,6 @@ const handleErrors = require('../middlewares/handleErrors');
 const AdminUser = require('../models/AdminUser');
 const CompanyUser = require('../models/CompanyUser');
 const DeveloperUser = require('../models/DeveloperUser');
-
-
-
 const registerRouter = require('express').Router();
 
 
