@@ -36,7 +36,7 @@ developerRouter.put('/:id', userExtractor ,async (req, resp, next) => {
       // Para seguridad
       // Revisa que el id que me manda en el token y el que se quiere editar sean el mismo
       // asi solo el dueño de la cuenta puede editar su propio perfil
-      if(id !== req.userId) {
+      if(id !== req.userId || req.kind !== 'Developer') {
          return resp.status(401).json({
             Message: 'Permisos insuficientes'
          });

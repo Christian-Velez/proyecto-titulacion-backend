@@ -11,7 +11,7 @@ const DeveloperUser = User.discriminator(
          location: String,
          dateOfBirth: {
             type: Date,
-            required: true
+            //required: true
          },
          lastConnection: Date,
          //age: Number,

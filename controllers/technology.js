@@ -33,7 +33,7 @@ technologyRouter.get('/', async (req, resp, next) => {
    }
 });
 
-// Actualizar una tecnologia
+// Actualizar una tecnologia -> Solo admin
 technologyRouter.post('/', userExtractor, async(req, resp, next) => {
    try{
       if(req.kind !== 'Admin') {
@@ -65,7 +65,7 @@ technologyRouter.post('/', userExtractor, async(req, resp, next) => {
 
 
 
-// Actualizar una tecnologia
+// Actualizar una tecnologia -> Solo admin
 technologyRouter.put('/:id', userExtractor, async(req, resp, next) => {
    try {
       if(req.kind !== 'Admin') {
