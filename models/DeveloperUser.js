@@ -13,6 +13,7 @@ const DeveloperUser = User.discriminator(
             type: Date,
             required: true
          },
+         lastConnection: Date,
          //age: Number,
          description: String,
          img: String,

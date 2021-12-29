@@ -13,7 +13,7 @@ loginRouter.post('/', async (req, resp, next) => {
       const { body } = req;
       const { username, password } = body;
 
-      const user = await User.findOne({username});
+      let user = await User.findOne({username});
 
       const passwordCorrect =
          user === null
@@ -44,6 +44,11 @@ loginRouter.post('/', async (req, resp, next) => {
          process.env.JWT_SECRET
       );
 
+
+      const lastSeen = new Date();
+      user.lastSeen = lastSeen;
+      await user.save();
+
       // Data que mando para guardarla en el front
       resp.status(201).json({
          message: 'Login successful',
@@ -52,6 +57,8 @@ loginRouter.post('/', async (req, resp, next) => {
          token,
          rest
       });
+
+
       
    } catch (err) {
       next(err);
@@ -90,6 +97,11 @@ loginRouter.post(
                   'Token missing or invalid',
             });
          }
+      
+         // Esta ruta se aplica cuando recarga la pagina,
+         // por lo tanto, actualiza la ultima conexión
+         const lastSeen = new Date();
+         await User.findByIdAndUpdate(decodedToken.id, { lastSeen });
 
          resp.status(202).json({ isValid: true });
       } catch (err) {

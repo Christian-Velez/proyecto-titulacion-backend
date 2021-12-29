@@ -14,7 +14,6 @@ const CompanyUser = User.discriminator(
             required: true,
          },
          description: String,
-         lastSeen: Date,
          qualifications: [],
          mostReqTechnology: {
             type: Schema.Types.ObjectId,
