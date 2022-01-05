@@ -1,12 +1,18 @@
 // .env
 require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const app = express();
+app.use(express.json());
+app.use(cors());
+
+
+
 
 // Mongo
 require('./mongo');
 require('./models/Job');
 
-const express = require('express');
-const cors = require('cors');
 
 // Controllers
 const loginRouter = require('./controllers/login');
@@ -15,10 +21,9 @@ const technologyRouter = require('./controllers/technology');
 const softSkillRouter = require('./controllers/softskill');
 const developerRouter = require('./controllers/developer');
 const companyRouter = require('./controllers/company');
+const jobRouter = require('./controllers/jobs');
 
-const app = express();
-app.use(express.json());
-app.use(cors());
+
 
 // Middleware
 app.use((request, response, next) => {
@@ -48,6 +53,10 @@ app.use('/api/developer', developerRouter);
 
 // Company
 app.use('/api/company', companyRouter);
+
+
+// Jobs
+app.use('/api/jobs', jobRouter);
 
 
 

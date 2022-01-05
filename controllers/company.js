@@ -34,7 +34,6 @@ companyRouter.put('/:id', userExtractor ,async (req, resp, next) => {
       const { id } = req.params;
       let userInfo = req.body;
 
-      console.log(req.kind);
 
       // Para seguridad
       // Revisa que el id que me manda en el token y el que se quiere editar sean el mismo

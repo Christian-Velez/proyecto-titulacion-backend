@@ -25,7 +25,7 @@ const jobSchema = new Schema({
                ref: 'Technology',
                required: true,
             },
-            yearsRequired: {
+            yearsOfExperience: {
                type: Number,
                required: true,
             },
