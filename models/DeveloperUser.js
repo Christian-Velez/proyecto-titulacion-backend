@@ -80,7 +80,7 @@ const DeveloperUser = User.discriminator(
          }],
 
 
-         applications: [],
+         //applications: [],
          qualifications: [{}]
       },
       options

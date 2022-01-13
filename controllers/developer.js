@@ -1,11 +1,12 @@
 //const bcrypt = require('bcrypt');
 //const handleErrors = require('../middlewares/handleErrors');
-
 const handleErrors = require('../middlewares/handleErrors');
 const userExtractor = require('../middlewares/userExtractor');
 const developerRouter =
    require('express').Router();
 const DeveloperUser = require('../models/DeveloperUser');
+
+const Job = require('../models/Job');
 
 // Obtener la info de 1 desarrollador
 developerRouter.get(
@@ -14,12 +15,56 @@ developerRouter.get(
       try {
          const { id } = req.params;
 
-         const devUser = await DeveloperUser.findById(id).populate('technologies.technology').populate('softskills');
+         const devUser =
+            await DeveloperUser.findById(id)
+               .populate(
+                  'technologies.technology'
+               )
+               .populate('softskills');
+
+
+      
+         const userJobs = devUser.technologies.map(tech => {
+            return tech._id.toString();
+         });
+
+         console.log(userJobs);
+         //console.log(typeof userJobs[0]);
+
          
-         resp.status(200).json({ 
+         //const newId = new mongoose.Types.ObjectId('61d85801c94ac5d7aed61fd4');
+
+         //const personalizedJobs = await Job.aggregate([
+         //   {
+         //      $match: { active: true }
+         //   },
+
+         //   {
+         //      $match: {
+         //        'salary': {
+         //            $all: [
+         //               '61d85801c94ac5d7aed61fd4'
+         //            ]
+         //         }
+         //      }
+         //   }
+      
+         //]);
+
+         const personalizedJobs = await Job.find({
+            active: true
+         });
+
+         console.log(personalizedJobs.length);
+
+         
+         
+         
+        
+
+         resp.status(200).json({
             message: 'Usuario encontrado',
-            devInfo: devUser 
-         
+            devInfo: devUser,
          });
       } catch (err) {
          next(err);
@@ -28,56 +73,63 @@ developerRouter.get(
 );
 
 // Actualizar el perfil de un desarrollador
-developerRouter.put('/:id', userExtractor ,async (req, resp, next) => {
-   try {
-      const { id } = req.params;
-      let userInfo = req.body;
+developerRouter.put(
+   '/:id',
+   userExtractor,
+   async (req, resp, next) => {
+      try {
+         const { id } = req.params;
+         let userInfo = req.body;
 
-      // Para seguridad
-      // Revisa que el id que me manda en el token y el que se quiere editar sean el mismo
-      // asi solo el dueño de la cuenta puede editar su propio perfil
-      if(id !== req.userId || req.kind !== 'Developer') {
-         return resp.status(401).json({
-            Message: 'Permisos insuficientes'
+         // Para seguridad
+         // Revisa que el id que me manda en el token y el que se quiere editar sean el mismo
+         // asi solo el dueño de la cuenta puede editar su propio perfil
+         if (
+            id !== req.userId ||
+            req.kind !== 'Developer'
+         ) {
+            return resp.status(401).json({
+               Message: 'Permisos insuficientes',
+            });
+         }
+
+         // Elimina los ID provisionales que necesito en el frontend para renderizar
+         userInfo.education &&
+            (userInfo.education =
+               userInfo.education.map((ed) => {
+                  delete ed._id;
+                  return ed;
+               }));
+
+         userInfo.certifications &&
+            (userInfo.certifications =
+               userInfo.certifications.map(
+                  (cer) => {
+                     delete cer._id;
+                     return cer;
+                  }
+               ));
+
+         const savedUser =
+            await DeveloperUser.findByIdAndUpdate(
+               id,
+               userInfo,
+               { new: true }
+            )
+               .populate(
+                  'technologies.technology'
+               )
+               .populate('softskills');
+
+         resp.status(200).json({
+            message: 'ok',
+            newUser: savedUser,
          });
+      } catch (err) {
+         next(err);
       }
-
-
-
-      // Elimina los ID provisionales que necesito en el frontend para renderizar
-      userInfo.education &&
-         (userInfo.education =
-            userInfo.education.map((ed) => {
-               delete ed._id;
-               return ed;
-            }));
-
-      userInfo.certifications &&
-         (userInfo.certifications =
-            userInfo.certifications.map((cer) => {
-               delete cer._id;
-               return cer;
-            }));
-
-
-      const savedUser =
-         await DeveloperUser.findByIdAndUpdate(
-            id,
-            userInfo,
-            { new: true }
-         )
-            .populate('technologies.technology')
-            .populate('softskills');
-
-      resp.status(200).json({
-         message: 'ok',
-         newUser: savedUser,
-      });
    }
-   catch(err){
-      next(err);
-   }
-});
+);
 
 developerRouter.use(handleErrors);
 

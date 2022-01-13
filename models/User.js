@@ -32,6 +32,16 @@ userSchema.set('toJSON', {
    },
 });
 
+
+userSchema.set('toObject', {
+   transform: (document, returnedObject) => {
+      returnedObject.id = returnedObject._id;
+      delete returnedObject._id;
+      delete returnedObject.__v;
+      delete returnedObject.passwordHash;
+   },
+});
+
 const User = model('User', userSchema);
 
 module.exports = User;

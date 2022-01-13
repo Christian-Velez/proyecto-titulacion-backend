@@ -19,12 +19,6 @@ const CompanyUser = User.discriminator(
             type: Schema.Types.ObjectId,
             ref: 'Technology',
          },
-         jobs: [
-            {
-               type: Schema.Types.ObjectId,
-               ref: 'Job',
-            },
-         ],
          toHire: [
             {
                candidate: {

@@ -48,22 +48,30 @@ const jobSchema = new Schema({
    },
 
    additional: String,
-   date: {
+   created_at: {
       type: Date,
-      default: Date.now,
    },
    active: {
       type: Boolean,
       default: true,
    },
-   candidates: [{ type: Schema.Types.ObjectId, ref: 'Developer' }],
+   applicants: [{ type: Schema.Types.ObjectId, ref: 'Developer' }],
 });
 
+jobSchema.pre('save', function(next){
+   if (!this.created_at ) {
+      const now = new Date();
+      this.created_at = now;
+   }
+   next();
+});
+ 
 jobSchema.set('toJSON', {
    transform: (document, returnedObject) => {
       returnedObject.id = returnedObject._id;
       delete returnedObject._id;
       delete returnedObject.__v;
+
    },
 });
 

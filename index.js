@@ -12,6 +12,9 @@ app.use(cors());
 // Mongo
 require('./mongo');
 require('./models/Job');
+require('./models/Softskill');
+require('./models/Technology');
+require('./models/CompanyUser');
 
 
 // Controllers

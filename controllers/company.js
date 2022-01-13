@@ -3,6 +3,7 @@ const userExtractor = require('../middlewares/userExtractor');
 //const userExtractor = require('../middlewares/userExtractor');s
 const companyRouter = require('express').Router();
 const CompanyUser = require('../models/CompanyUser');
+const Job = require('../models/Job');
 
 // Obtener la info de 1 empresa
 companyRouter.get(
@@ -13,13 +14,35 @@ companyRouter.get(
 
          const companyUser = await CompanyUser.findById(id)
                .populate('mostReqTechnology')
-               .populate('jobs')
                .populate('toHire.candidate')
                .populate('employees.employee');
+               
+
+         const jobs = await Job.find({
+            company: companyUser._id
+         })
+            .populate('techsRequired.technology')
+            .populate('applicants', {
+               img: 1,
+               softskills: 1,
+               name: 1,
+               technologies: 1,
+               location: 1
+            })
+            .sort([['created_at', -1]]);
+
+         
+         let companyInfo = {
+            ...companyUser.toObject(),
+            jobs
+         };
+               
+
+         
 
          resp.status(200).json({
             message: 'Usuario encontrado',
-            companyInfo: companyUser,
+            companyInfo,
          });
       } catch (err) {
          next(err);
@@ -28,7 +51,7 @@ companyRouter.get(
 );
 
 
-// Actualizar la info de 1 empresa
+// Actualizar la info de 1 empresa 
 companyRouter.put('/:id', userExtractor ,async (req, resp, next) => {
    try {
       const { id } = req.params;

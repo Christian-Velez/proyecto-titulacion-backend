@@ -9,18 +9,51 @@ const CompanyUser = require('../models/CompanyUser');
 const Technology = require('../models/Technology');
 
 
-// Obtener todos los trabajos
+// Obtener todos los trabajos - Dev
 jobRouter.get('/', async (req, resp, next) => {
-   try{
-      const jobs = await Job.find({});
-      resp.status(200).json(jobs);
 
+   // Si la aplicacion crece demasiado (muchos trabajos publicados)
+   // Se tiene que agregar paginacion
+   
+   try{
+      const jobs = 
+         await Job.find({
+            active: true
+         })
+            .populate('company')
+            .populate('techsRequired.technology')
+            .populate('softsRequired')
+            .sort([['created_at', -1]]);
+      
+      resp.status(200).json(jobs);
    } catch(err) {
       next(err);
    }
 });
 
 
+jobRouter.get('/last', async(req, resp, next) => {
+   try {
+      const lastJobs = 
+         await Job.find({})
+            .sort({ created_at: -1 })
+            .limit(2)
+            .populate('company', {
+               name: 1,
+               img: 1,
+            });
+
+      resp.status(200).json(lastJobs);
+   }
+
+   catch(err) {
+      next(err);
+   }
+
+});
+
+
+// Compañia - Postear un trabajo
 jobRouter.post('/', userExtractor, async(req, resp, next) => {
    try{
       
@@ -39,11 +72,10 @@ jobRouter.post('/', userExtractor, async(req, resp, next) => {
          company: company._id
       });
 
-      const savedJob = await newJob.save();
+      let savedJob = await newJob.save();
+      savedJob = await savedJob.populate('techsRequired.technology');
 
-      // MongoDB por detras actualiza la base de datos
-      company.jobs = company.jobs.concat(savedJob._id);
-      await company.save();
+     
 
       // Envio la respuesta
       resp.status(200).json(savedJob);
@@ -51,8 +83,6 @@ jobRouter.post('/', userExtractor, async(req, resp, next) => {
 
 
       // ... Procesos no indispensables o relacionados con la oferta
-
-
       // Actualiza los contadores de las tecnologias solicitadas
       const { techsRequired } = savedJob;
       await Promise.all(
@@ -71,6 +101,100 @@ jobRouter.post('/', userExtractor, async(req, resp, next) => {
       next(err);
    }
 });
+
+
+// Compañia - Editar un trabajo (e.g: Archivar o desarchivar un trabajo)
+jobRouter.put('/:jobId', userExtractor, async(req, resp, next) => {
+   try {
+      const newJobInfo = req.body;
+
+      const { jobId }= req.params;
+      let job = await Job.findById(jobId);
+
+      if(!job) {
+         return resp.send(404).json({Message: 'Oferta de trabajo no encontrada'});
+      }
+
+
+      if(req.userId !== job.company.toString()) {
+         return resp.status(401).json({
+            Message: 'No puedes editar esta oferta'
+         });
+      }
+
+      const updatedJob = 
+         await Job.findByIdAndUpdate(jobId, newJobInfo, { new: true})
+            .populate('techsRequired.technology')
+            .populate('applicants', {
+               img: 1,
+               softskills: 1,
+               name: 1,
+               technologies: 1,
+               location: 1
+            });
+      resp.status(200).json({ updatedJob });
+   } catch(err) {
+      next(err);
+   }
+});
+
+
+
+// Dev - Aplicar a un trabajo
+jobRouter.put('/apply/:jobId', userExtractor, async(req, resp, next) => {
+   try {
+
+      const { jobId } = req.params;
+      const savedJob = await Job.findByIdAndUpdate(jobId, {
+         $push: {
+            applicants: req.userId
+         }
+      }, { new: true})
+         .populate('company')
+         .populate('techsRequired.technology')
+         .populate('softsRequired');
+
+      
+      if(!savedJob) {
+         return resp.send(404).json({Message: 'Oferta de trabajo no encontrada'});
+      }
+
+      resp.status(200).json(savedJob);
+     
+   } catch(err) {
+      next(err);
+   }
+});
+
+// Dev - Cancelar postulacion
+jobRouter.put('/cancelapply/:jobId', userExtractor, async(req, resp, next) => {
+   try {
+      
+      const { jobId } = req.params;
+
+      const savedJob = await Job.findByIdAndUpdate(jobId, {
+         $pull: {
+            applicants: req.userId
+         }
+      }, { new: true})
+         .populate('company')
+         .populate('techsRequired.technology')
+         .populate('softsRequired');
+
+
+      if(!savedJob) {
+         return resp.send(404).json({Message: 'Oferta de trabajo no encontrada'});
+      }
+
+      resp.status(200).json(savedJob);
+   } catch(err) {
+      next(err);
+   }
+});
+
+
+
+
 
 jobRouter.use(handleErrors);
 module.exports = jobRouter;
