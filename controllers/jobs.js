@@ -20,8 +20,16 @@ jobRouter.get('/', async (req, resp, next) => {
          await Job.find({
             active: true
          })
-            .populate('company')
-            .populate('techsRequired.technology')
+            .populate('company', {
+               name: 1,
+               img: 1,
+               location: 1,
+            })
+            .populate('techsRequired.technology', {
+               name: 1,
+               img: 1,
+               
+            })
             .populate('softsRequired')
             .sort([['created_at', -1]]);
       
@@ -32,10 +40,14 @@ jobRouter.get('/', async (req, resp, next) => {
 });
 
 
+// Ultimos trabajos -> los utilizo en la landing page 
 jobRouter.get('/last', async(req, resp, next) => {
    try {
       const lastJobs = 
-         await Job.find({})
+         await Job.find({}, {
+            title: 1,
+            created_at: 1
+         })
             .sort({ created_at: -1 })
             .limit(2)
             .populate('company', {

@@ -5,13 +5,13 @@ const companyRouter = require('express').Router();
 const CompanyUser = require('../models/CompanyUser');
 const Job = require('../models/Job');
 
-// Obtener la info de 1 empresa
-companyRouter.get(
-   '/:id',
-   async (req, resp, next) => {
+// Obtener la info de 1 empresa 
+// Solo la misma empresa puede obtener toda su informacion
+companyRouter.get('/:id' ,async (req, resp, next) => {
       try {
          const { id } = req.params;
 
+        
          const companyUser = await CompanyUser.findById(id)
                .populate('mostReqTechnology')
                .populate('toHire.candidate')
@@ -31,15 +31,11 @@ companyRouter.get(
             })
             .sort([['created_at', -1]]);
 
-         
          let companyInfo = {
             ...companyUser.toObject(),
             jobs
          };
                
-
-         
-
          resp.status(200).json({
             message: 'Usuario encontrado',
             companyInfo,
