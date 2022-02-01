@@ -63,8 +63,6 @@ app.use('/api/jobs', jobRouter);
 
 
 
-
-
 const PORT = 3006;
 
 app.listen(PORT, () => {

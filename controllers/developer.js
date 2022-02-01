@@ -6,7 +6,6 @@ const developerRouter =
    require('express').Router();
 const DeveloperUser = require('../models/DeveloperUser');
 
-const Job = require('../models/Job');
 
 // Obtener la info de 1 desarrollador
 developerRouter.get(
@@ -22,50 +21,12 @@ developerRouter.get(
                )
                .populate('softskills');
 
-
-      
-         const userJobs = devUser.technologies.map(tech => {
-            return tech._id.toString();
-         });
-
-         console.log(userJobs);
-         //console.log(typeof userJobs[0]);
-
-         
-         //const newId = new mongoose.Types.ObjectId('61d85801c94ac5d7aed61fd4');
-
-         //const personalizedJobs = await Job.aggregate([
-         //   {
-         //      $match: { active: true }
-         //   },
-
-         //   {
-         //      $match: {
-         //        'salary': {
-         //            $all: [
-         //               '61d85801c94ac5d7aed61fd4'
-         //            ]
-         //         }
-         //      }
-         //   }
-      
-         //]);
-
-         const personalizedJobs = await Job.find({
-            active: true
-         });
-
-         console.log(personalizedJobs.length);
-
-         
-         
-         
-        
-
          resp.status(200).json({
             message: 'Usuario encontrado',
             devInfo: devUser,
          });
+
+      
       } catch (err) {
          next(err);
       }

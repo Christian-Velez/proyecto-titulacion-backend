@@ -24,6 +24,7 @@ jobRouter.get('/', async (req, resp, next) => {
                name: 1,
                img: 1,
                location: 1,
+               lastSeen: 1,
             })
             .populate('techsRequired.technology', {
                name: 1,
@@ -115,6 +116,75 @@ jobRouter.post('/', userExtractor, async(req, resp, next) => {
 });
 
 
+// Compañia - Aceptar a un postulante
+
+/*
+   Postulante
+   Add a to hire
+   Quitar del trabajo
+*/
+jobRouter.put('/acceptdev', userExtractor, async (req, resp, next) => {
+   try {
+
+      const { jobId, devId } = req.body;
+
+
+
+
+
+
+      resp.status(200).send({ Message: 'Ok'});
+   
+   } catch(err) {
+      next(err);
+   }
+});
+
+
+
+// Compañia - Rechazar a un postulante
+jobRouter.put('/discarddev', userExtractor, async (req, resp, next) => {
+   try {
+
+      const { jobId, devId } = req.body;
+
+
+      const job = await Job.findById(jobId);
+
+      if(job.company.toString() !== req.userId) {
+         return resp.status(401).json({
+            Message: 'Permisos insuficientes'
+         });
+      }
+
+
+      await Job.findByIdAndUpdate(jobId,  {
+         $pull: {
+            applicants: devId
+         }
+      });
+
+      resp.status(200).send({ Message: 'Programador rechazado'});
+
+
+      // Falta mandar el mensaje de rechazo automatico
+
+   } catch(err) {
+      next(err);
+   }
+});
+
+
+
+
+
+
+
+
+
+
+
+
 // Compañia - Editar un trabajo (e.g: Archivar o desarchivar un trabajo)
 jobRouter.put('/:jobId', userExtractor, async(req, resp, next) => {
    try {
@@ -149,6 +219,8 @@ jobRouter.put('/:jobId', userExtractor, async(req, resp, next) => {
       next(err);
    }
 });
+
+
 
 
 
