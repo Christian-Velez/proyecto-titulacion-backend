@@ -117,23 +117,39 @@ jobRouter.post('/', userExtractor, async(req, resp, next) => {
 
 
 // Compañia - Aceptar a un postulante
-
-/*
-   Postulante
-   Add a to hire
-   Quitar del trabajo
-*/
 jobRouter.put('/acceptdev', userExtractor, async (req, resp, next) => {
    try {
 
       const { jobId, devId } = req.body;
 
+      const job = await Job.findById(jobId);
+      if(job.company.toString() !== req.userId) {
+         return resp.status(401).json({
+            Message: 'Permisos insuficientes'
+         });
+      }
 
+      // Lo quita de la lista de postulados
+      await Job.findByIdAndUpdate(jobId,  {
+         $pull: {
+            applicants: devId
+         }
+      });
 
+      // Lo agrega a "por contratar"
+      const savedCompany = await CompanyUser.findByIdAndUpdate(job.company.toString(), {
+         $push: {
+            toHire: {
+               candidate: devId,
+               job: job.title
+            }
+         }
+      }, { new: true }).populate('toHire.candidate');
 
-
-
-      resp.status(200).send({ Message: 'Ok'});
+      resp.status(200).send({ 
+         Message: 'Programador aceptado',
+         toHire: savedCompany.toHire
+      });
    
    } catch(err) {
       next(err);
@@ -150,7 +166,6 @@ jobRouter.put('/discarddev', userExtractor, async (req, resp, next) => {
 
 
       const job = await Job.findById(jobId);
-
       if(job.company.toString() !== req.userId) {
          return resp.status(401).json({
             Message: 'Permisos insuficientes'

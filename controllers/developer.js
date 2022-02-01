@@ -26,7 +26,7 @@ developerRouter.get(
             devInfo: devUser,
          });
 
-      
+
       } catch (err) {
          next(err);
       }
