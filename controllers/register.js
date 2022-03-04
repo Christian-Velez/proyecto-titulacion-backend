@@ -40,13 +40,5 @@ registerRouter.post('/', async (req, res, next) => {
 registerRouter.use(handleErrors);
 
 
-
-
-
-
-
-
-
-
 module.exports = registerRouter;
 

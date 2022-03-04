@@ -71,8 +71,6 @@ companyRouter.put('/:id', userExtractor ,async (req, resp, next) => {
             { new: true }
          );
 
-
-
       resp.status(200).json({
          message: 'ok',
          newUser: savedCompany,

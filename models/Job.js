@@ -51,10 +51,12 @@ const jobSchema = new Schema({
    created_at: {
       type: Date,
    },
+   
    active: {
       type: Boolean,
       default: true,
    },
+
    applicants: [{ type: Schema.Types.ObjectId, ref: 'Developer' }],
 });
 

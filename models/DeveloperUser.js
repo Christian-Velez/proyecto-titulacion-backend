@@ -41,10 +41,7 @@ const DeveloperUser = User.discriminator(
                required: true
             },
             linkDemo: String,
-            linkGH: {
-               type: String,
-               required: true
-            }
+            linkGH: String
          }],
          education: [{
             title: {

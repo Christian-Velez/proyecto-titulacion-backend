@@ -33,6 +33,39 @@ developerRouter.get(
    }
 );
 
+
+// Agregar una tecnologia
+developerRouter.put('/addTech', userExtractor, async(req, resp, next) => {
+   try {
+      const { id, technology, yearsOfExperience } = req.body;
+      if (
+         id !== req.userId ||
+         req.kind !== 'Developer'
+      ) {
+         return resp.status(401).json({
+            Message: 'Permisos insuficientes',
+         });
+      }
+
+
+      await DeveloperUser.findByIdAndUpdate(id, {
+         $push: {
+            technologies: {
+               technology,
+               yearsOfExperience
+            }
+         }
+      });
+
+      resp.status(200).json({ Message: 'Ok' });
+
+
+   } catch(err) {
+      next(err);
+   }
+});
+
+
 // Actualizar el perfil de un desarrollador
 developerRouter.put(
    '/:id',
@@ -91,6 +124,8 @@ developerRouter.put(
       }
    }
 );
+
+
 
 developerRouter.use(handleErrors);
 
