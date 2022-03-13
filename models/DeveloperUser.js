@@ -9,12 +9,7 @@ const DeveloperUser = User.discriminator(
    new Schema(
       {
          location: String,
-         dateOfBirth: {
-            type: Date,
-            //required: true
-         },
-         lastConnection: Date,
-         //age: Number,
+         age: Number,
          description: String,
          img: String,
          curriculum: String,

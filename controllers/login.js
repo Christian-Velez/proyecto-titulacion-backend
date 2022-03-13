@@ -44,7 +44,6 @@ loginRouter.post('/', async (req, resp, next) => {
          process.env.JWT_SECRET
       );
 
-         
       const lastSeen = new Date();
       user.lastSeen = lastSeen;
       await user.save();

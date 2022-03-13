@@ -33,7 +33,7 @@ technologyRouter.get('/', async (req, resp, next) => {
    }
 });
 
-// Actualizar una tecnologia -> Solo admin
+// Nueva tecnologia -> solo admin
 technologyRouter.post('/', userExtractor, async(req, resp, next) => {
    try{
       if(req.kind !== 'Admin') {
@@ -88,6 +88,25 @@ technologyRouter.put('/:id', userExtractor, async(req, resp, next) => {
       next(err);
    }
 
+});
+
+
+technologyRouter.delete('/:id', userExtractor, async(req, resp, next) => {
+   try {
+      if(req.kind !== 'Admin') {
+         return resp.status(401).json({
+            Message: 'Permisos insuficientes'
+         });
+      }
+      const { id } = req.params;
+      await Technology.findByIdAndDelete(id);
+
+      resp.status(200).json({
+         Message: 'Tecnologia eliminada'
+      });
+   } catch(err) {
+      next(err);
+   }
 });
 
 

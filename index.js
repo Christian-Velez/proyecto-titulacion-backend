@@ -25,6 +25,7 @@ const softSkillRouter = require('./controllers/softskill');
 const developerRouter = require('./controllers/developer');
 const companyRouter = require('./controllers/company');
 const jobRouter = require('./controllers/jobs');
+const searchRouter = require('./controllers/search');
 
 
 
@@ -57,10 +58,11 @@ app.use('/api/developer', developerRouter);
 // Company
 app.use('/api/company', companyRouter);
 
-
 // Jobs
 app.use('/api/jobs', jobRouter);
 
+// Search companies and developers
+app.use('/api/search', searchRouter);
 
 
 const PORT = 3006;

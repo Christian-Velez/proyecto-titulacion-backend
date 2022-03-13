@@ -46,6 +46,82 @@ companyRouter.get('/:id' ,async (req, resp, next) => {
    }
 );
 
+// Descartar a un programador de "toHire"
+companyRouter.post('/discardDeveloper', userExtractor, async(req, resp, next) => {
+   try {
+      const { relationId } = req.body;
+      const companyId = req.userId;
+
+      await CompanyUser.findByIdAndUpdate(companyId, {
+         $pull: {
+            toHire: {
+               _id: relationId
+            }
+         }
+      });
+
+      resp.status(200).json({
+         message: 'Programador descartado',
+      });
+
+   } catch(err) {
+      next(err);
+   }
+});
+
+// Contratar a un programador
+companyRouter.post('/hireDeveloper', userExtractor, async(req, resp, next) => {
+   try {
+      const { relationId, devId, jobTitle } = req.body;
+      const companyId = req.userId;
+
+      const newEmployee = {
+         employee: devId,
+         job: jobTitle
+      };
+
+      await CompanyUser.findByIdAndUpdate(companyId,  {
+         $pull: {
+            toHire: {
+               _id:  relationId
+            }
+         },
+         $push: {
+            employees: newEmployee
+         }
+      });
+
+      resp.status(200).json({
+         message: 'Programador contratado'
+      });
+
+   } catch(err) {
+      next(err);
+   }
+});
+
+// Despedir a un programador
+companyRouter.post('/fireDeveloper', userExtractor, async(req, resp, next) => {
+   try {
+      const { relationId } = req.body;
+      const companyId = req.userId;
+
+      await CompanyUser.findByIdAndUpdate(companyId, {
+         $pull: {
+            employees: {
+               _id: relationId
+            }
+         }
+      });
+
+      resp.status(200).json({
+         message: 'Programador despedido',
+      });
+
+   } catch(err) {
+      next(err);
+   }
+});
 
 // Actualizar la info de 1 empresa 
 companyRouter.put('/:id', userExtractor ,async (req, resp, next) => {
@@ -63,13 +139,15 @@ companyRouter.put('/:id', userExtractor ,async (req, resp, next) => {
          });
       }
 
-
       const savedCompany =
          await CompanyUser.findByIdAndUpdate(
             id,
             userInfo,
             { new: true }
-         );
+         )
+         .populate('mostReqTechnology')
+         .populate('toHire.candidate')
+         .populate('employees.employee');
 
       resp.status(200).json({
          message: 'ok',
@@ -80,6 +158,9 @@ companyRouter.put('/:id', userExtractor ,async (req, resp, next) => {
       next(err);
    }
 });
+
+
+
 
 
 

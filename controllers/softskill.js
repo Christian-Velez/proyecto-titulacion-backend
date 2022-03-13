@@ -65,6 +65,28 @@ softSkillRouter.put('/:id', userExtractor, async(req, resp, next) => {
 });
 
 
+softSkillRouter.delete('/:id', userExtractor, async(req, resp, next) => {
+   try {
+      if(req.kind !== 'Admin') {
+         return resp.status(401).json({
+            Message: 'Permisos insuficientes'
+         });
+      }
+      const { id } = req.params;
+
+
+      await Softskill.findByIdAndDelete(id);
+     
+
+      resp.status(200).json({
+         Mensaje: 'Softskill eliminada'
+      });
+
+   } catch(err) {
+      next(err);
+   }
+});
+
 
 softSkillRouter.use(handleErrors);
 

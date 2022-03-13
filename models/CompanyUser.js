@@ -34,6 +34,10 @@ const CompanyUser = User.discriminator(
                   type: Schema.Types.ObjectId,
                   ref: 'Developer',
                },
+               date: {
+                  type: Date,
+                  default: Date.now
+               },
                job: String,
             },
          ],
