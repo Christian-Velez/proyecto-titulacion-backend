@@ -7,39 +7,9 @@ const userExtractor = require('../middlewares/userExtractor');
 const Job = require('../models/Job');
 const CompanyUser = require('../models/CompanyUser');
 const Technology = require('../models/Technology');
-
-
-// Obtener todos los trabajos - Dev
-jobRouter.get('/', async (req, resp, next) => {
-
-   // Si la aplicacion crece demasiado (muchos trabajos publicados)
-   // Se tiene que agregar paginacion
-   
-   try{
-      const jobs = 
-         await Job.find({
-            active: true
-         })
-            .populate('company', {
-               name: 1,
-               img: 1,
-               location: 1,
-               lastSeen: 1,
-            })
-            .populate('techsRequired.technology', {
-               name: 1,
-               img: 1,
-               
-            })
-            .populate('softsRequired')
-            .sort([['created_at', -1]]);
-      
-      resp.status(200).json(jobs);
-   } catch(err) {
-      next(err);
-   }
-});
-
+const getRecommendedJobs = require('./getRecommendedJobs');
+const DeveloperUser = require('../models/DeveloperUser');
+const { findMode, findAverage } = require('../helpers/findMode');
 
 // Ultimos trabajos -> los utilizo en la landing page 
 jobRouter.get('/last', async(req, resp, next) => {
@@ -62,8 +32,59 @@ jobRouter.get('/last', async(req, resp, next) => {
    catch(err) {
       next(err);
    }
-
 });
+
+
+
+
+// Obtener todos los trabajos - Dev
+jobRouter.get('/:id', async (req, resp, next) => {
+
+   const { id } = req.params;
+   // Si la aplicacion crece demasiado (muchos trabajos publicados)
+   // Se tiene que agregar paginacion
+   
+   try{
+      const jobs = 
+         await Job.find({
+            active: true
+         })
+            .populate('company', {
+               name: 1,
+               img: 1,
+               location: 1,
+               lastSeen: 1,
+            })
+            .populate('techsRequired.technology', {
+               name: 1,
+               img: 1,
+               
+            })
+            .populate('softsRequired')
+            .sort([['created_at', -1]]);
+      
+
+      let developer = await DeveloperUser.findById(id).populate('technologies.technology');
+      developer = developer.toObject();
+
+      const { technologies } = developer;
+      let recommendedJobs = [];
+            
+      if(technologies.length > 0) {
+         recommendedJobs = getRecommendedJobs(jobs, technologies);
+      }
+
+      resp.status(200).json({
+         jobs,
+         recommendedJobs
+      });
+
+
+   } catch(err) {
+      next(err);
+   }
+});
+
 
 
 // Compañia - Postear un trabajo
@@ -77,6 +98,19 @@ jobRouter.post('/', userExtractor, async(req, resp, next) => {
       }
       
       const job = req.body;
+      const { techsRequired } = job;
+
+      ///*
+      //   [
+      //      {
+      //         tech: id,
+      //         yearsOfexperience
+      //      }
+      //   ]
+
+      //*/
+
+
       const company = await CompanyUser.findById(req.userId);
 
 
@@ -96,19 +130,40 @@ jobRouter.post('/', userExtractor, async(req, resp, next) => {
 
 
       // ... Procesos no indispensables o relacionados con la oferta
-      // Actualiza los contadores de las tecnologias solicitadas
-      const { techsRequired } = savedJob;
+
       await Promise.all(
          techsRequired.map(async (required) => {
-            const { technology } = required;
+            const { technology, yearsOfExperience } = required;
+
+            // Actualiza los contadores de las tecnologias solicitadas
             await Technology.findByIdAndUpdate(technology, {
                $inc: {
                   timesRequested: 1
                }
             });
+
+            // Ingresa los ids de las tecnologias al techHistory
+            await CompanyUser.findByIdAndUpdate(req.userId, {
+               $push: {
+                  technologiesHistory: technology,
+                  yearsOfExpHistory: yearsOfExperience
+               }
+            });
          })
       );
 
+      // Actualizar los contadores
+      const updatedCompany = await CompanyUser.findById(req.userId);
+      const { technologiesHistory, yearsOfExpHistory } = updatedCompany;
+
+      const mostReqTechnology = findMode(technologiesHistory);
+      const averageYears = findAverage(yearsOfExpHistory);
+
+      if(mostReqTechnology && averageYears) {
+         updatedCompany.mostReqTechnology = mostReqTechnology;
+         updatedCompany.averageYears = averageYears;
+         await updatedCompany.save();
+      }
 
    }catch(err){
       next(err);

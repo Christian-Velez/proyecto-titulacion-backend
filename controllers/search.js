@@ -19,15 +19,35 @@ searchRouter.post('/developers', async(req, resp, next) => {
       let query;
 
       if(technology === 'all') {
-         query = {};
+         query = {
+            'technologies': {
+               $elemMatch: {
+                  yearsOfExperience: {
+                     $gte: minYears,
+                     $lte: maxYears
+                  }
+               }
+            },
+            age: {
+               $gte: minAge,
+               $lte: maxAge,
+            }
+         };
       } else {
          query = {
-            'technologies.technology': technology,
-            'technology.yearsOfExperience': {
-               '$gte': minYears,
-               '$lte': maxYears
+            'technologies': {
+               $elemMatch: {
+                  technology,
+                  yearsOfExperience: {
+                     $gte: minYears,
+                     $lte: maxYears
+                  }
+               }
+            },
+            age: {
+               $gte: minAge,
+               $lte: maxAge,
             }
-   
          };
       }
 
@@ -36,11 +56,16 @@ searchRouter.post('/developers', async(req, resp, next) => {
          img: 1,
          lastSeen: 1,
          location: 1,
+         age: 1,
          name: 1
       };
 
 
-      const developerUsers = await DeveloperUser.find(query, options);
+      const developerUsers =
+         await DeveloperUser.find(
+            query,
+            options
+         );
 
 
       resp.status(200).json({
@@ -59,9 +84,32 @@ searchRouter.post('/companies', async(req, resp, next) => {
 
       let { name, technology, min, max } = req.body;
 
-      //if(technology === 'all') {
-         technology = '';
-      //}
+      let query;
+
+      if(technology === 'all') {
+         query = {
+            name: {
+               '$regex': name,
+               '$options': 'i'
+            },
+            averageYears: {
+               $gte: min,
+               $lte: max,
+            }
+         };
+      } else {
+         query = {
+            name: {
+               '$regex': name,
+               '$options': 'i'
+            },
+            mostReqTechnology: technology,
+            averageYears: {
+               $gte: min,
+               $lte: max,
+            }
+         };
+      }
 
       const options = {
          id: 1,
@@ -71,14 +119,7 @@ searchRouter.post('/companies', async(req, resp, next) => {
          name: 1
       };
 
-      const companyUsers = await CompanyUser.find({
-         name: {
-            '$regex': name,
-            '$options': 'i'
-         }
-         //mostReqTechnology: technology,
-
-      }, options);
+      const companyUsers = await CompanyUser.find(query, options);
 
 
 

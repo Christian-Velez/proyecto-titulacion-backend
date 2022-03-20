@@ -14,11 +14,7 @@ const CompanyUser = User.discriminator(
             required: true,
          },
          description: String,
-         qualifications: [],
-         mostReqTechnology: {
-            type: Schema.Types.ObjectId,
-            ref: 'Technology',
-         },
+         
          toHire: [
             {
                candidate: {
@@ -41,6 +37,13 @@ const CompanyUser = User.discriminator(
                job: String,
             },
          ],
+         technologiesHistory: [String],
+         mostReqTechnology: {
+            type: Schema.Types.ObjectId,
+            ref: 'Technology',
+         },
+         yearsOfExpHistory: [Number],
+         averageYears: Number,
       },
 
       options

@@ -5,13 +5,14 @@ const userExtractor = require('../middlewares/userExtractor');
 const developerRouter =
    require('express').Router();
 const DeveloperUser = require('../models/DeveloperUser');
-
+const Rating = require('../models/Rating');
 
 // Obtener la info de 1 desarrollador
 developerRouter.get(
    '/:id',
    async (req, resp, next) => {
       try {
+
          const { id } = req.params;
 
          const devUser =
@@ -21,9 +22,18 @@ developerRouter.get(
                )
                .populate('softskills');
 
+
+         const qualifications = await Rating.find({
+            user: id
+         });
+
+
          resp.status(200).json({
             message: 'Usuario encontrado',
-            devInfo: devUser,
+            devInfo: {
+               ...devUser.toObject(),
+               qualifications
+            },
          });
 
 
@@ -114,6 +124,7 @@ developerRouter.put(
                   'technologies.technology'
                )
                .populate('softskills');
+
 
          resp.status(200).json({
             message: 'ok',

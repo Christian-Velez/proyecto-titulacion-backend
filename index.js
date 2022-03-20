@@ -26,18 +26,14 @@ const developerRouter = require('./controllers/developer');
 const companyRouter = require('./controllers/company');
 const jobRouter = require('./controllers/jobs');
 const searchRouter = require('./controllers/search');
+const ratingRouter = require('./controllers/ratings');
+const conversationRouter = require('./controllers/conversations');
+const messageRouter = require('./controllers/messages');
 
-
-
-// Middleware
 app.use((request, response, next) => {
    console.log('Body: ', request.body);
-
    next();
-
-   // Despues de estar aqui, pasa al siguiente check / endpoint
 });
-
 
 // Inicio
 app.get('/', (req, resp) => {
@@ -63,6 +59,13 @@ app.use('/api/jobs', jobRouter);
 
 // Search companies and developers
 app.use('/api/search', searchRouter);
+
+// Rate companies and developers
+app.use('/api/rate', ratingRouter);
+
+// Chat
+app.use('/api/conversation', conversationRouter);
+app.use('/api/message', messageRouter);
 
 
 const PORT = 3006;

@@ -4,6 +4,7 @@ const userExtractor = require('../middlewares/userExtractor');
 const companyRouter = require('express').Router();
 const CompanyUser = require('../models/CompanyUser');
 const Job = require('../models/Job');
+const Rating = require('../models/Rating');
 
 // Obtener la info de 1 empresa 
 // Solo la misma empresa puede obtener toda su informacion
@@ -31,9 +32,15 @@ companyRouter.get('/:id' ,async (req, resp, next) => {
             })
             .sort([['created_at', -1]]);
 
+
+         const qualifications = await Rating.find({
+            user: companyUser._id
+         });
+
          let companyInfo = {
             ...companyUser.toObject(),
-            jobs
+            jobs,
+            qualifications,
          };
                
          resp.status(200).json({
