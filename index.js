@@ -68,7 +68,7 @@ app.use('/api/conversation', conversationRouter);
 app.use('/api/message', messageRouter);
 
 
-const PORT = 3006;
+const PORT = process.env.PORT || 3006;
 
 app.listen(PORT, () => {
    console.log('App running on port ' + PORT);

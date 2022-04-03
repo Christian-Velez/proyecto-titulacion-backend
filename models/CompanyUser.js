@@ -44,6 +44,7 @@ const CompanyUser = User.discriminator(
          },
          yearsOfExpHistory: [Number],
          averageYears: Number,
+         defaultMessages: {}
       },
 
       options

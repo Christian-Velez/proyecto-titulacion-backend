@@ -43,7 +43,9 @@ conversationRouter.get('/:userId', async(req, resp, next) => {
          members: {
             $in: [userId]
          }
-      }).populate('members');
+      })
+         .sort({ updatedAt: -1})
+         .populate('members');
 
       resp.status(200).json({
          conversations

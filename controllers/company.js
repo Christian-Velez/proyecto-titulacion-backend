@@ -3,7 +3,9 @@ const userExtractor = require('../middlewares/userExtractor');
 //const userExtractor = require('../middlewares/userExtractor');s
 const companyRouter = require('express').Router();
 const CompanyUser = require('../models/CompanyUser');
+const Conversation = require('../models/Conversation');
 const Job = require('../models/Job');
+const Message = require('../models/Message');
 const Rating = require('../models/Rating');
 
 // Obtener la info de 1 empresa 
@@ -56,16 +58,43 @@ companyRouter.get('/:id' ,async (req, resp, next) => {
 // Descartar a un programador de "toHire"
 companyRouter.post('/discardDeveloper', userExtractor, async(req, resp, next) => {
    try {
-      const { relationId } = req.body;
+      const { relationId, devId } = req.body;
       const companyId = req.userId;
 
-      await CompanyUser.findByIdAndUpdate(companyId, {
+      const savedCompany = await CompanyUser.findByIdAndUpdate(companyId, {
          $pull: {
             toHire: {
                _id: relationId
             }
          }
       });
+
+      // Se le manda un mensaje avisandole que se descartó
+      let conversation = await Conversation.find({
+         members: {
+            $all: [companyId, devId]
+         }
+      });
+      conversation = conversation[0];
+
+
+      const defaultMessage = `La empresa ${savedCompany.name} te ha descartado en el paso previo a la contratación.`;
+      //const { defaultMessages = {} } = savedCompany;
+
+      const newMessage = new Message({
+         conversationId: conversation._id,
+         sender: savedCompany._id,
+         text: defaultMessage
+      });
+
+      await newMessage.save();
+
+      // Se bloquea la conversacion
+      await Conversation.findByIdAndUpdate(conversation._id, {
+         blocked: true
+      });
+
+
 
       resp.status(200).json({
          message: 'Programador descartado',
@@ -87,7 +116,7 @@ companyRouter.post('/hireDeveloper', userExtractor, async(req, resp, next) => {
          job: jobTitle
       };
 
-      await CompanyUser.findByIdAndUpdate(companyId,  {
+      const savedCompany = await CompanyUser.findByIdAndUpdate(companyId,  {
          $pull: {
             toHire: {
                _id:  relationId
@@ -97,6 +126,28 @@ companyRouter.post('/hireDeveloper', userExtractor, async(req, resp, next) => {
             employees: newEmployee
          }
       });
+
+      // Se le manda un mensaje avisandole que se le contrató
+      let conversation = await Conversation.find({
+         members: {
+            $all: [companyId, devId]
+         }
+      });
+      conversation = conversation[0];
+
+      const defaultMessage = `La empresa ${savedCompany.name} te ha contratado.`;
+      const { defaultMessages = {} } = savedCompany;
+
+      const newMessage = new Message({
+         conversationId: conversation._id,
+         sender: savedCompany._id,
+         text: defaultMessages.hireDev || defaultMessage
+      });
+
+      await newMessage.save();
+
+
+
 
       resp.status(200).json({
          message: 'Programador contratado'
@@ -110,15 +161,41 @@ companyRouter.post('/hireDeveloper', userExtractor, async(req, resp, next) => {
 // Despedir a un programador
 companyRouter.post('/fireDeveloper', userExtractor, async(req, resp, next) => {
    try {
-      const { relationId } = req.body;
+      console.log('DESPEDIR');
+
+      const { relationId, devId } = req.body;
       const companyId = req.userId;
 
-      await CompanyUser.findByIdAndUpdate(companyId, {
+      const savedCompany = await CompanyUser.findByIdAndUpdate(companyId, {
          $pull: {
             employees: {
                _id: relationId
             }
          }
+      });
+
+      // Se le manda un mensaje avisandole que está despedido
+      let conversation = await Conversation.find({
+         members: {
+            $all: [savedCompany._id.toString(), devId]
+         }
+      });
+      conversation = conversation[0];
+
+      const defaultMessage = `La empresa ${savedCompany.name} te ha despedido.`;
+      const { defaultMessages = {} } = savedCompany;
+
+      const newMessage = new Message({
+         conversationId: conversation._id,
+         sender: savedCompany._id,
+         text: defaultMessages.fireDev || defaultMessage
+      });
+
+      await newMessage.save();
+
+      // Se bloquea la conversacion
+      await Conversation.findByIdAndUpdate(conversation._id, {
+         blocked: true
       });
 
       resp.status(200).json({
@@ -146,6 +223,7 @@ companyRouter.put('/:id', userExtractor ,async (req, resp, next) => {
          });
       }
 
+      console.log(userInfo);
       const savedCompany =
          await CompanyUser.findByIdAndUpdate(
             id,

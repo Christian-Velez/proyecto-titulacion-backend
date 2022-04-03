@@ -1,7 +1,10 @@
 const { Schema, model } = require('mongoose');
 
 const messageSchema = new Schema({
-   conversationId: String,
+   conversationId: {
+      type: String,
+      required: true,
+   },
    sender: {
       type: Schema.Types.ObjectId,
       ref: 'User'

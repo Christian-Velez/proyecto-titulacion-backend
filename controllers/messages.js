@@ -2,6 +2,7 @@ const messageRouter = require('express').Router();
 const handleErrors = require('../middlewares/handleErrors');
 const userExtractor = require('../middlewares/userExtractor');
 const Message = require('../models/Message');
+const Conversation = require('../models/Conversation');
 
 
 messageRouter.post('/', async(req, resp, next) => {
@@ -18,6 +19,11 @@ messageRouter.post('/', async(req, resp, next) => {
       const newMessage = new Message(req.body);
       let savedMessage = await newMessage.save();
       savedMessage = await savedMessage.populate('sender');
+
+
+      await Conversation.findByIdAndUpdate(conversationId, {
+         updatedAt: Date.now
+      });
 
       resp.status(200).json({
          Message: 'Mensaje guardado',

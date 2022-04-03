@@ -10,6 +10,8 @@ const Technology = require('../models/Technology');
 const getRecommendedJobs = require('./getRecommendedJobs');
 const DeveloperUser = require('../models/DeveloperUser');
 const { findMode, findAverage } = require('../helpers/findMode');
+const Conversation = require('../models/Conversation');
+const Message = require('../models/Message');
 
 // Ultimos trabajos -> los utilizo en la landing page 
 jobRouter.get('/last', async(req, resp, next) => {
@@ -201,6 +203,26 @@ jobRouter.put('/acceptdev', userExtractor, async (req, resp, next) => {
          }
       }, { new: true }).populate('toHire.candidate');
 
+
+      // Se inicia una nueva conversacion
+      const newConversation = new Conversation({
+         members: [savedCompany._id, devId]
+      });
+      const savedConversation = await newConversation.save();
+
+
+      // Se le manda el mensaje
+      const defaultMessage = `La empresa ${savedCompany.name} ha aceptado tu postulación.`;
+
+      const { defaultMessages = {} } = savedCompany;
+      const newMessage = new Message({
+         conversationId: savedConversation._id,
+         sender: savedCompany._id,
+         text: defaultMessages.acceptPost ||  defaultMessage
+      });
+
+      await newMessage.save();
+      
       resp.status(200).send({ 
          Message: 'Programador aceptado',
          toHire: savedCompany.toHire

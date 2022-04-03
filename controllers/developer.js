@@ -114,6 +114,8 @@ developerRouter.put(
                   }
                ));
 
+               
+
          const savedUser =
             await DeveloperUser.findByIdAndUpdate(
                id,

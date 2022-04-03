@@ -3,7 +3,6 @@ const options = { discriminatorKey: 'kind' };
 
 const userSchema = new Schema(
    {
-      // Los 3 tipos de usuario tienen estos campos
       username: {
          type: String,
          required: true,
