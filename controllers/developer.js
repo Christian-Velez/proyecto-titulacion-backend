@@ -2,6 +2,8 @@
 //const handleErrors = require('../middlewares/handleErrors');
 const handleErrors = require('../middlewares/handleErrors');
 const userExtractor = require('../middlewares/userExtractor');
+const CompanyUser = require('../models/CompanyUser');
+const Conversation = require('../models/Conversation');
 const developerRouter =
    require('express').Router();
 const DeveloperUser = require('../models/DeveloperUser');
@@ -75,6 +77,45 @@ developerRouter.put('/addTech', userExtractor, async(req, resp, next) => {
    }
 });
 
+// Bloquear a una empresa
+developerRouter.post('/blockCompany', userExtractor, async(req, resp, next) => {
+   try {
+      console.log('sida')
+      const devId = req.userId;
+      const { companyId, relationId } = req.body;
+
+      // Eliminar de postulantes
+      // Eliminar de contratados
+      await CompanyUser.findByIdAndUpdate(companyId, {
+         $pull: {
+            employees: {
+               employee: devId
+            },
+
+            toHire: {
+               candidate: devId
+            }
+         }
+      })
+
+      // Bloquear el chat
+      let conversation = await Conversation.find({
+         members: {
+            $all: [companyId, devId]
+         }
+      });
+      conversation = conversation[0];
+      conversation.blocked = true;
+      await conversation.save();
+
+      resp.status(200).json({ Message: 'Empresa bloqueada' });
+
+   } catch(err) {
+      next(err);
+   }
+})
+
+
 
 // Actualizar el perfil de un desarrollador
 developerRouter.put(
@@ -137,6 +178,10 @@ developerRouter.put(
       }
    }
 );
+
+
+
+
 
 
 

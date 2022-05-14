@@ -161,8 +161,6 @@ companyRouter.post('/hireDeveloper', userExtractor, async(req, resp, next) => {
 // Despedir a un programador
 companyRouter.post('/fireDeveloper', userExtractor, async(req, resp, next) => {
    try {
-      console.log('DESPEDIR');
-
       const { relationId, devId } = req.body;
       const companyId = req.userId;
 
