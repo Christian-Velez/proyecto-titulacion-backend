@@ -38,6 +38,7 @@ messageRouter.post('/', async(req, resp, next) => {
 
       resp.status(200).json({
          Message: 'Mensaje guardado',
+         Estabablock: conversation.blocked,
          savedMessage
       });
    
