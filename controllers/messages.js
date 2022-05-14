@@ -16,6 +16,17 @@ messageRouter.post('/', async(req, resp, next) => {
          });
       }
 
+      const conversation = await Conversation.findById(conversationId);
+
+      if(conversation.blocked) {
+         
+         resp.send(403).json({
+            Message: 'La conversacion esta bloqueada'
+         });
+
+         return;
+      }
+
       const newMessage = new Message(req.body);
       let savedMessage = await newMessage.save();
       savedMessage = await savedMessage.populate('sender');
