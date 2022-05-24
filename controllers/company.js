@@ -55,6 +55,40 @@ companyRouter.get('/:id' ,async (req, resp, next) => {
    }
 );
 
+// Configurar mensajes predeterminados
+companyRouter.post('/defaultMessages/:id', userExtractor, async(req, resp, next) => {
+   try {
+      const { id } = req.params;
+      const { defaultMessages } = req.body;
+
+      const company = await CompanyUser.findById(id);
+
+      // Elimina los mensajes anteriores
+      delete company.defaultMessages;
+      await company.save();
+
+      // Detecta los nuevos
+      const newMessagesKeys = Object.keys(defaultMessages);
+      newMessagesKeys.forEach(key => {
+         // Si viene un mensaje predeterminado, lo inserta
+         if(!defaultMessages[key]) {
+            delete defaultMessages[key]
+         }
+      });
+
+      company.defaultMessages = defaultMessages;
+      await company.save();
+
+      resp.status(200).json({ Message: 'Mensajes guardados ' });
+
+
+
+   } catch(err) {
+      next(err);
+   }
+})
+
+
 // Descartar a un programador de "toHire"
 companyRouter.post('/discardDeveloper', userExtractor, async(req, resp, next) => {
    try {
