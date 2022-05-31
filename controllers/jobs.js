@@ -204,19 +204,41 @@ jobRouter.put('/acceptdev', userExtractor, async (req, resp, next) => {
       }, { new: true }).populate('toHire.candidate');
 
 
-      // Se inicia una nueva conversacion
-      const newConversation = new Conversation({
-         members: [savedCompany._id, devId]
+      // Se revisa si ya existe una conversacion
+      let conversation = await Conversation.find({
+         members: {
+            $all: [savedCompany._id, devId],
+         },
       });
-      const savedConversation = await newConversation.save();
+      conversation = conversation[0];
+
+      let definitiveConversation;
+
+      // Si existe...
+      if(conversation) {
+
+         definitiveConversation = conversation;
+
+         // Se desbloquea la conv por si acaso
+         definitiveConversation.blocked = false;
+         await definitiveConversation.save();
+
+      } else {
+         // Se inicia una nueva conversacion
+         const newConversation = new Conversation({
+            members: [savedCompany._id, devId]
+         });
+
+         definitiveConversation = await newConversation.save();
+      }
 
 
       // Se le manda el mensaje
       const defaultMessage = `La empresa ${savedCompany.name} ha aceptado tu postulación.`;
-
       const { defaultMessages = {} } = savedCompany;
+
       const newMessage = new Message({
-         conversationId: savedConversation._id,
+         conversationId: definitiveConversation._id,
          sender: savedCompany._id,
          text: defaultMessages.acceptPost ||  defaultMessage
       });

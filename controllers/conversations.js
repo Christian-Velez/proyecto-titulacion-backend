@@ -6,8 +6,45 @@
 const conversationRouter = require('express').Router();
 const handleErrors = require('../middlewares/handleErrors');
 const userExtractor = require('../middlewares/userExtractor');
+const CompanyUser = require('../models/CompanyUser');
 const Conversation = require('../models/Conversation');
 
+
+conversationRouter.post('/blockConversation', userExtractor, async(req, resp, next) => {
+   try {
+      const { 
+         userId, kind,
+         conversationId
+      } = req.body;
+
+
+      // si se va a bloquear a una empresa...
+      // el usuario "developer" renuncia, por lo tanto...
+      if(kind === 'Company') {
+         // Eliminar de postulantes
+         // Eliminar de contratados
+         await CompanyUser.findByIdAndUpdate(userId, {
+            $pull: {
+               employees: {
+                  employee: req.userId
+               },
+
+               toHire: {
+                  candidate: req.userId
+               }
+            }
+         })
+      } 
+      
+      // Bloquear el chat
+      await Conversation.findByIdAndUpdate(conversationId, { blocked: true });
+      resp.status(200).json({ Message: 'Usuario bloqueado' });
+
+
+   } catch(err) {
+      next(err);
+   }
+})
 
 conversationRouter.post('/', async(req, resp, next) => {
    try {
