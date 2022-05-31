@@ -45,6 +45,23 @@ developerRouter.get(
    }
 );
 
+developerRouter.get('/getDevCompanies/:devId', userExtractor, async(req, resp, next) => {
+   try {
+      const { devId } = req.params;
+
+      if(devId !== req.userId) {
+         return resp.status(401).json({ Message: 'Permisos insuficientes' });
+      }
+
+      const companies = await CompanyUser.find({
+         "employees.employee": devId
+      });
+
+      resp.status(200).json({ companies });
+   } catch(err) {
+      next(err);
+   }
+});
 
 // Agregar una tecnologia
 developerRouter.put('/addTech', userExtractor, async(req, resp, next) => {
