@@ -32,6 +32,13 @@ companyRouter.get('/:id' ,async (req, resp, next) => {
                technologies: 1,
                location: 1
             })
+            .populate('rejectedUsers', {
+               img: 1,
+               softskills: 1,
+               name: 1,
+               technologies: 1,
+               location: 1
+            })
             .sort([['created_at', -1]]);
 
 
@@ -92,9 +99,10 @@ companyRouter.post('/defaultMessages/:id', userExtractor, async(req, resp, next)
 // Descartar a un programador de "toHire"
 companyRouter.post('/discardDeveloper', userExtractor, async(req, resp, next) => {
    try {
-      const { relationId, devId } = req.body;
+      const { relationId, devId, jobId } = req.body;
       const companyId = req.userId;
 
+      // Lo quita de la lista "por contratar"
       const savedCompany = await CompanyUser.findByIdAndUpdate(companyId, {
          $pull: {
             toHire: {
@@ -102,6 +110,14 @@ companyRouter.post('/discardDeveloper', userExtractor, async(req, resp, next) =>
             }
          }
       });
+
+      // Lo marca como "ya rechazado" de la oferta de trabajo en particular
+      await Job.findByIdAndUpdate(jobId, {
+         $push: {
+            rejectedUsers: devId
+         }
+      })
+
 
       // Se le manda un mensaje avisandole que se descartó
       let conversation = await Conversation.find({

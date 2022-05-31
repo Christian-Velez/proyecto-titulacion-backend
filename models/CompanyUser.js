@@ -22,6 +22,7 @@ const CompanyUser = User.discriminator(
                   ref: 'Developer',
                },
                job: String,
+               jobId: String,
             },
          ],
          employees: [
@@ -35,6 +36,7 @@ const CompanyUser = User.discriminator(
                   default: Date.now
                },
                job: String,
+               jobId: String,
             },
          ],
          technologiesHistory: [String],

@@ -198,7 +198,8 @@ jobRouter.put('/acceptdev', userExtractor, async (req, resp, next) => {
          $push: {
             toHire: {
                candidate: devId,
-               job: job.title
+               job: job.title,
+               jobId: job._id,
             }
          }
       }, { new: true }).populate('toHire.candidate');
@@ -262,8 +263,6 @@ jobRouter.put('/discarddev', userExtractor, async (req, resp, next) => {
    try {
 
       const { jobId, devId } = req.body;
-
-
       const job = await Job.findById(jobId);
       if(job.company.toString() !== req.userId) {
          return resp.status(401).json({
@@ -275,14 +274,13 @@ jobRouter.put('/discarddev', userExtractor, async (req, resp, next) => {
       await Job.findByIdAndUpdate(jobId,  {
          $pull: {
             applicants: devId
+         },
+         $push: {
+            rejectedUsers: devId
          }
       });
 
       resp.status(200).send({ Message: 'Programador rechazado'});
-
-
-      // Falta mandar el mensaje de rechazo automatico
-
    } catch(err) {
       next(err);
    }

@@ -58,8 +58,7 @@ const jobSchema = new Schema({
    },
 
    applicants: [{ type: Schema.Types.ObjectId, ref: 'Developer' }],
-
-   rejectedUsers: [String]
+   rejectedUsers: [{ type: Schema.Types.ObjectId, ref: 'Developer' }]
 });
 
 jobSchema.pre('save', function(next){
