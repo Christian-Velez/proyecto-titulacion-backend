@@ -1,62 +1,32 @@
-// Rangos de años de experiencia
-const RANGES = [
-   {
-      min: 0,
-      max: 0,
-   },
-   {
-      min: 1,
-      max: 3,
-   },
-   {
-      min: 4,
-      max: 8,
-   },
-   {
-      min: 9,
-      max: 30,
-   },
-];
-
-const getRange = (num) => {
-   for (let i = 0; i < RANGES.length; i++) {
-      const RANGE = RANGES[i];
-      if (num >= RANGE.min && num <= RANGE.max) {
-         return RANGE;
-      }
-   }
-};
 
 const getRecommendedJobs = (
    allJobs,
    devTechs
 ) => {
-   let devTechs2 = [];
+   let filteredJobs = [];
 
-   devTechs.map((item) => {
+   let devTechStack = [];
+   devTechs.forEach((item) => {
       const { technology, yearsOfExperience } =
          item || {};
 
       if (technology && yearsOfExperience) {
-         devTechs2.push({
+         devTechStack.push({
             id: technology._id.toString(),
             yearsOfExperience,
          });
       }
    });
 
-   let filteredJobs = [];
-
+   // Tengo todas las tecnologías que piden en la oferta?
    for (let i = 0; i < allJobs.length; i++) {
       let addJob = true;
-
       const job = allJobs[i];
-      const { techsRequired } = job;
+
       // Extrae solo el ID
-
       // IDS de tecnologias y años
+      const { techsRequired } = job;
       let techsRequiredFormated = [];
-
       techsRequired.forEach((item) => {
          const { technology, yearsOfExperience } =
             item || {};
@@ -70,46 +40,31 @@ const getRecommendedJobs = (
          }
       });
 
+      // Si no se solicita nada o el usuario no tiene tecnologias
+      // de plano no se agrega
       if (
-         devTechs2.length === 0 ||
+         devTechStack.length === 0 ||
          techsRequiredFormated === 0
       ) {
          addJob = false;
-      } else {
-         let a = 0;
-         do {
-            const RANGE = getRange(
-               devTechs2[a].yearsOfExperience
-            );
+      } 
+      else {
+         
+         techsRequiredFormated.forEach(tech => {
+            const devCurrentTechnology = devTechStack.find((devTech) => devTech.id === tech.id);
+            const devHasTech = devCurrentTechnology !== undefined;
 
-            const B = a;
-            const index =
-               techsRequiredFormated.findIndex(
-                  (element) =>
-                     element.id === devTechs2[B].id
-               );
-
-            // Si no incluye la tecnologia...
-            if (index === -1) {
+            if(!devHasTech) {
                addJob = false;
-               break;
+               return;
             }
 
-            // Si la incluye...
-            // console.log(techsRequiredFormated[index].yearsOfExperience, devTechs2[a].yearsOfExperience)
-
-            // ¿los años de experiencia son menores o iguales que los que tiene el dev?
-            if (
-               !(
-                  techsRequiredFormated[index]
-                     .yearsOfExperience <= devTechs2[a].yearsOfExperience
-               )
-            ) {
+            // Si la tiene, revisar los años de experiencia
+            if(! (devCurrentTechnology.yearsOfExperience >= tech.yearsOfExperience) ) {
                addJob = false;
-               break;
+               return;
             }
-            a++;
-         } while (a < devTechs2.length && addJob);
+         })
       }
 
       if (addJob) {
@@ -118,7 +73,9 @@ const getRecommendedJobs = (
    }
 
    return filteredJobs;
-}; // Extrae SOLO los trabajos que tengan tecnologias existentes
+};
+
+// Extrae SOLO los trabajos que tengan tecnologias existentes
 
 //const getRecommendedJobs = (allJobs, devTechs) => {
 //   let techs = [];

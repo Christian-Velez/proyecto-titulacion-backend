@@ -8,13 +8,13 @@ const developerRouter =
    require('express').Router();
 const DeveloperUser = require('../models/DeveloperUser');
 const Rating = require('../models/Rating');
+const Job = require('../models/Job');
 
 // Obtener la info de 1 desarrollador
 developerRouter.get(
    '/:id',
    async (req, resp, next) => {
       try {
-
          const { id } = req.params;
 
          const devUser =
@@ -24,75 +24,130 @@ developerRouter.get(
                )
                .populate('softskills');
 
-
-         const qualifications = await Rating.find({
-            user: id
-         });
-
+         const qualifications = await Rating.find(
+            {
+               user: id,
+            }
+         );
 
          resp.status(200).json({
             message: 'Usuario encontrado',
             devInfo: {
                ...devUser.toObject(),
-               qualifications
+               qualifications,
             },
          });
-
-
       } catch (err) {
          next(err);
       }
    }
 );
 
-developerRouter.get('/getDevCompanies/:devId', userExtractor, async(req, resp, next) => {
-   try {
-      const { devId } = req.params;
+developerRouter.get(
+   '/getRejectedJobs/:devId',
+   userExtractor,
+   async (req, resp, next) => {
+      try {
+         const { devId } = req.params;
+         if (devId !== req.userId) {
+            return resp
+               .status(401)
+               .json({
+                  Message:
+                     'Permisos insuficientes',
+               });
+         }
 
-      if(devId !== req.userId) {
-         return resp.status(401).json({ Message: 'Permisos insuficientes' });
+         const rejectedJobs = await Job.find({
+            rejectedUsers: devId,
+         })
+            .populate('company', {
+               name: 1,
+               img: 1,
+               location: 1,
+               lastSeen: 1,
+            })
+            .populate('techsRequired.technology', {
+               name: 1,
+               img: 1,
+               
+            })
+            .populate('softsRequired')
+
+         resp.status(200).json({ rejectedJobs });
+      } catch (err) {
+         next(err);
       }
-
-      const companies = await CompanyUser.find({
-         "employees.employee": devId
-      });
-
-      resp.status(200).json({ companies });
-   } catch(err) {
-      next(err);
    }
-});
+);
+
+developerRouter.get(
+   '/getDevCompanies/:devId',
+   userExtractor,
+   async (req, resp, next) => {
+      try {
+         const { devId } = req.params;
+
+         if (devId !== req.userId) {
+            return resp
+               .status(401)
+               .json({
+                  Message:
+                     'Permisos insuficientes',
+               });
+         }
+
+         const companies = await CompanyUser.find(
+            {
+               'employees.employee': devId,
+            }
+         );
+
+         resp.status(200).json({ companies });
+      } catch (err) {
+         next(err);
+      }
+   }
+);
 
 // Agregar una tecnologia
-developerRouter.put('/addTech', userExtractor, async(req, resp, next) => {
-   try {
-      const { id, technology, yearsOfExperience } = req.body;
-      if (
-         id !== req.userId ||
-         req.kind !== 'Developer'
-      ) {
-         return resp.status(401).json({
-            Message: 'Permisos insuficientes',
-         });
-      }
-
-
-      await DeveloperUser.findByIdAndUpdate(id, {
-         $push: {
-            technologies: {
-               technology,
-               yearsOfExperience
-            }
+developerRouter.put(
+   '/addTech',
+   userExtractor,
+   async (req, resp, next) => {
+      try {
+         const {
+            id,
+            technology,
+            yearsOfExperience,
+         } = req.body;
+         if (
+            id !== req.userId ||
+            req.kind !== 'Developer'
+         ) {
+            return resp.status(401).json({
+               Message: 'Permisos insuficientes',
+            });
          }
-      });
 
-      resp.status(200).json({ Message: 'Ok' });
+         await DeveloperUser.findByIdAndUpdate(
+            id,
+            {
+               $push: {
+                  technologies: {
+                     technology,
+                     yearsOfExperience,
+                  },
+               },
+            }
+         );
 
-
-   } catch(err) {
-      next(err);
+         resp.status(200).json({ Message: 'Ok' });
+      } catch (err) {
+         next(err);
+      }
    }
-});
+);
 
 // Actualizar el perfil de un desarrollador
 developerRouter.put(
@@ -132,8 +187,6 @@ developerRouter.put(
                   }
                ));
 
-               
-
          const savedUser =
             await DeveloperUser.findByIdAndUpdate(
                id,
@@ -145,7 +198,6 @@ developerRouter.put(
                )
                .populate('softskills');
 
-
          resp.status(200).json({
             message: 'ok',
             newUser: savedUser,
@@ -155,12 +207,6 @@ developerRouter.put(
       }
    }
 );
-
-
-
-
-
-
 
 developerRouter.use(handleErrors);
 
