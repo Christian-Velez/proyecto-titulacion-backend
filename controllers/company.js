@@ -18,7 +18,8 @@ companyRouter.get('/:id' ,async (req, resp, next) => {
          const companyUser = await CompanyUser.findById(id)
                .populate('mostReqTechnology')
                .populate('toHire.candidate')
-               .populate('employees.employee');
+               .populate('employees.employee')
+               .populate('firedDevelopers.dev');
                
 
          const jobs = await Job.find({
@@ -158,12 +159,13 @@ companyRouter.post('/discardDeveloper', userExtractor, async(req, resp, next) =>
 // Contratar a un programador
 companyRouter.post('/hireDeveloper', userExtractor, async(req, resp, next) => {
    try {
-      const { relationId, devId, jobTitle } = req.body;
+      const { relationId, devId, jobTitle, jobId } = req.body;
       const companyId = req.userId;
 
       const newEmployee = {
          employee: devId,
-         job: jobTitle
+         job: jobTitle,
+         jobId
       };
 
       const savedCompany = await CompanyUser.findByIdAndUpdate(companyId,  {
@@ -211,14 +213,23 @@ companyRouter.post('/hireDeveloper', userExtractor, async(req, resp, next) => {
 // Despedir a un programador
 companyRouter.post('/fireDeveloper', userExtractor, async(req, resp, next) => {
    try {
-      const { relationId, devId } = req.body;
+      const { relationId, devId, jobId } = req.body;
       const companyId = req.userId;
+
+
+      const newFiredDev = {
+         dev: devId,
+         jobId
+      }
 
       const savedCompany = await CompanyUser.findByIdAndUpdate(companyId, {
          $pull: {
             employees: {
                _id: relationId
             }
+         },
+         $push: {
+            firedDevelopers: newFiredDev
          }
       });
 

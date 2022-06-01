@@ -39,6 +39,16 @@ const CompanyUser = User.discriminator(
                jobId: String,
             },
          ],
+
+         firedDevelopers: [
+            {
+               dev:  {
+                  type: Schema.Types.ObjectId,
+                  ref: 'Developer',
+               },
+               jobId: String,
+            }
+         ],
          technologiesHistory: [String],
          mostReqTechnology: {
             type: Schema.Types.ObjectId,
