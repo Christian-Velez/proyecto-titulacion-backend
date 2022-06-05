@@ -325,7 +325,16 @@ jobRouter.put('/:jobId', userExtractor, async(req, resp, next) => {
                name: 1,
                technologies: 1,
                location: 1
+            })
+            .populate('rejectedUsers', {
+               img: 1,
+               softskills: 1,
+               name: 1,
+               technologies: 1,
+               location: 1
             });
+
+
       resp.status(200).json({ updatedJob });
    } catch(err) {
       next(err);
